@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Performing Sequence Alignment in R</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Performing Sequence Alignment in R</h1>
+
+
+
+<p>Multiple sequence alignment (MSA) is a fundamental tool in biology.
+Accurate alignment is crucial for downstream analyses in genomics,
+proteomics, and evolutionary studies, providing insights into biological
+processes and molecular interactions essential for understanding
+life.</p>
+<p>Some of the current programs for sequence alignment include, but are
+not limited to:</p>
+<ul>
+<li>MUSCLE</li>
+<li>Clustal Omega</li>
+<li>MAFFT</li>
+<li>T-Coffee</li>
+</ul>
+<p>Although MSA is not on the focus of the <strong>orthGS</strong>
+package, it is an important tool for phylogenetic reconstructions and
+orthology/paralogy analyses. Thus, in the current vignette we offer some
+indications to perform multiple alignments without leaving the R
+context.</p>
+<div id="downloading-and-installing-muscle-and-clustal-omega" class="section level2">
+<h2>Downloading and installing MUSCLE and Clustal Omega</h2>
+<p>The current version of MUSCLE is v5. Nevertheless, since most R
+packages are generally designed for earlier versions of MUSCLE (like
+v3), you may want to dowload an install MUSCLE v3.8.31 (<a href="https://drive5.com/muscle/downloads_v3.htm" class="uri">https://drive5.com/muscle/downloads_v3.htm</a>). In my
+computer I have renamed the binary to ´muscle3´ because I have also
+installed MUSCLE v5 (<a href="https://github.com/rcedgar/muscle/releases/tag/v5.3" class="uri">https://github.com/rcedgar/muscle/releases/tag/v5.3</a>).
+Both versions of the software are accessible via my system’s PATH
+environment variable and can be invoked as ´muscle3´ (v3.8.31) or
+´muscle´ (v5).</p>
+<p>To download and install Clustal Omega you can go to <a href="http://www.clustal.org/omega/" class="uri">http://www.clustal.org/omega/</a> and follows the
+instructions. Nevertheless, if you have a linux based OS you may benefit
+of the suitable package manager. For instance, for macOS I use
+<code>Homebrew</code>, which can be installed via CLI:</p>
+<p><code>/bin/bash -c &quot;$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)&quot;</code></p>
+<p>Then:</p>
+<p><code>brew install brewsci/bio/clustal-omega</code></p>
+<p><code>brew install brewsci/bio/muscle</code></p>
+<p>will do the work for you.</p>
+<p>For linux OS you may use either <code>apt</code>, <code>dnf</code>,
+<code>pacman</code> or whatever the package manager i suitable for your
+system.</p>
+</div>
+<div id="performing-alignment-using-the-orthgs-package" class="section level2">
+<h2>Performing alignment using the orthGS package</h2>
+<p>As an example, we will use a small sample of sequences that can be
+obtained from the <strong>orthGS</strong> package.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="co"># ara &lt;- subsetGS(&quot;Arabidopsis thaliana&quot;)</span></span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="co"># muscle_aln &lt;- msa(sequences = ara$prot, ids = ara$phylo_id, method = &quot;muscle3&quot;)</span></span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="co"># muscle_aln</span></span></code></pre></div>
+<p>If we opt to use Clustal Omega instead of MUSCLE:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># clustalo_aln &lt;- msa(sequences = ara$prot, ids = ara$phylo_id, method = &quot;clustalo&quot;)</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="co"># clustalo_aln</span></span></code></pre></div>
+</div>
+<div id="performing-alignment-using-the-ape-package" class="section level2">
+<h2>Performing alignment using the ape package</h2>
+<p>The <code>ape</code> package in R provides a number of functions,
+which call their respective programs (executables) from R to align
+multiple nucleotide (DNAbin) or amino acid (AAbin) sequences. The
+binaries for the programs must be installed separately (as explained
+above) and it is highly recommended to do this so that the execubables
+are in a directory located on the PATH of the system. As a note of
+interest <code>ape</code> allows to call MUSCLE v5 and T-Coffee.</p>
+<p>Note that the input sequences must be in format AAbin or DNAbin,
+which store sequences as binary vectors (less human-readable but more
+memory-efficient).</p>
+<p>Type in the RStudio terminal <code>?ape::tcoffee</code>, for
+instance, to obtain help in the use of these functions.</p>
+</div>
+<div id="performing-alignment-using-the-msa-package" class="section level2">
+<h2>Performing alignment using the msa package</h2>
+<p>The <code>msa</code> package in R provides an interface to multiple
+sequence alignment algorithms (including Clustal Omega, ClustalW and
+Muscle), allowing users to perform alignments directly from within the R
+environment. The <code>msa</code> R package is available via
+Bioconductor. The simplest way to install the package is the following
+(uncomment the lines before executing the chunk):</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co"># if (!requireNamespace(&quot;BiocManager&quot;, quietly=TRUE))</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="co">#     install.packages(&quot;BiocManager&quot;)</span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="co"># BiocManager::install(&quot;msa&quot;)</span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co"># clustalw_aln &lt;- msa::msa(inputSeqs = ara$prot, method = &quot;ClustalW&quot;, type = &quot;protein&quot;)</span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="co"># clustalw_aln</span></span></code></pre></div>
+</div>
+<div id="performing-alignment-using-the-muscle-package" class="section level2">
+<h2>Performing alignment using the muscle package</h2>
+<p>The <code>muscle</code> package in R is an interface to the MUSCLE
+(Multiple Sequence Comparison by Log-Expectation) algorithm, which is
+widely used for performing multiple sequence alignments. The package
+allows users to run the MUSCLE algorithm from within R, simplifying the
+process of aligning biological sequences such as DNA, RNA, or protein
+sequences.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co"># if (!require(&quot;BiocManager&quot;, quietly = TRUE))</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="co">#     install.packages(&quot;BiocManager&quot;)</span></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="co"># BiocManager::install(&quot;muscle&quot;)</span></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="co"># </span></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="co"># if (!require(&quot;Biostrings&quot;, quitely = TRUE))</span></span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="co">#   BiocManager::install(&quot;Biostrings&quot;)</span></span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="co"># seqs &lt;- Biostrings::AAStringSet(ara$prot)</span></span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co"># mus_aln &lt;- muscle::muscle(seqs)</span></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="co"># mus_aln</span></span></code></pre></div>
+</div>
+<div id="performing-alignment-integrating-muscle-v5-in-your-r-workflow" class="section level2">
+<h2>Performing alignment integrating MUSCLE v5 in your R workflow</h2>
+<p>We can still integrate MUSCLE v5 into our R workflow by calling it as
+an external command-line tool. Just for the sake of fun:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co"># # if (!require(&quot;BiocManager&quot;, quietly = TRUE))</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="co"># #     install.packages(&quot;BiocManager&quot;)</span></span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="co"># # BiocManager::install(&quot;Biostrings&quot;)</span></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="co"># </span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="co"># sq &lt;- ara$prot</span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="co"># names(sq) &lt;- ara$phylo_id</span></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="co"># seqs &lt;- Biostrings::AAStringSet(sq)</span></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="co"># </span></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="co"># ## --- Save the input sequences in a temporary file</span></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="co"># destfile &lt;- tempfile(pattern = &quot;input_sequences&quot;,</span></span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a><span class="co">#                      tmpdir = tempdir(),</span></span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a><span class="co">#                      fileext = &quot;.fasta&quot;)</span></span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a><span class="co"># Biostrings::writeXStringSet(seqs, filepath = destfile)</span></span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a><span class="co"># </span></span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a><span class="co"># </span></span>
+<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a><span class="co"># ## --- Run MUSCLE on the input sequences file</span></span>
+<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a><span class="co"># system(paste(&quot;muscle -align &quot;, destfile, &quot; -output aligned_sequences.fasta&quot;, sep = &quot;&quot;))</span></span>
+<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a><span class="co"># </span></span>
+<span id="cb5-19"><a href="#cb5-19" tabindex="-1"></a><span class="co"># ## --- Read fasta alignment as dataframe</span></span>
+<span id="cb5-20"><a href="#cb5-20" tabindex="-1"></a><span class="co"># m5 &lt;- seqinr::read.fasta(file = &quot;./aligned_sequences.fasta&quot;)</span></span>
+<span id="cb5-21"><a href="#cb5-21" tabindex="-1"></a><span class="co"># m5df &lt;- as.data.frame(matrix(rep(NA, length(m5[[1]]) * length(m5)), nrow = length(m5)) )</span></span>
+<span id="cb5-22"><a href="#cb5-22" tabindex="-1"></a><span class="co"># for (i in 1:length(m5)){</span></span>
+<span id="cb5-23"><a href="#cb5-23" tabindex="-1"></a><span class="co">#   m5df[i, ] &lt;- m5[[i]]</span></span>
+<span id="cb5-24"><a href="#cb5-24" tabindex="-1"></a><span class="co"># }</span></span></code></pre></div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

@@ -25,7 +25,14 @@ Removes gaps in a given msa.
 It should be noted that this function does not carry out the alignment itself.
 }
 \examples{
-gapless_msa(msa(sequences = c("APGW", "AGWC", "CWGA"),ids = c("a", "b", "c"))$ali)
+# Example 1:
+aln <- matrix(c("A",  "P",  "G",  "W",  "-",  "-",
+                "-",  "A",  "G",  "W",  "C",  "-",
+                "-",  "-",  "C",  "W",  "G",  "A" ), nrow = 3, byrow =TRUE)
+gapless_msa(aln)
+# Example 2:
+\dontrun{gapless_msa(msa(sequences = c("APGW", "AGWC", "CWGA"),
+                     ids = c("a", "b", "c"))$ali)}
 }
 \seealso{
 msa

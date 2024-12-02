@@ -17,4 +17,4 @@ install.packages("orthGS")`
 
 Your are welcome to:
 
-* Send us an email to: elenaaledoesteba@gmail.com
+* Send us an email to: elenaaledoesteban@gmail.com
