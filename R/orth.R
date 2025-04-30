@@ -5,6 +5,7 @@
 #      getseqGS                     #
 #      subsetGS                     #
 #      speciesGS                    #
+#      orthology                    #
 #                                   #
 ## ------------------------------- ##
 
@@ -57,7 +58,7 @@ orthG <- function(set = "all"){
 ##                   orthP                 ##
 ## --------------------------------------- ##
 #' Search Orthologous of a Given Protein
-#' @description Searchs orthologous of a given protein within a set of selected species
+#' @description Searches orthologous of a given protein within a set of selected species
 #' @usage orthP(phylo_id, set = "all")
 #' @param phylo_id phylo_id of the query protein
 #' @param set set of species of interest provided as a character vector, either with the binomial or short code of the species (see details).
@@ -187,7 +188,7 @@ subsetGS <- function(sp){
 #' @usage speciesGS(sp)
 #' @param sp set of species of interest (either binomial or short code name)
 #' @details The species set should be given as a character vector (see example)
-#' @return  A datafrane containing the information for the requested species.
+#' @return  A dataframe containing the information for the requested species.
 #' @examples speciesGS(c("Pinus pinaster", "Ath"))
 #' @export
 
@@ -206,5 +207,62 @@ speciesGS <- function(sp){
       output$output[i] <- "species not found in out database"
     }
   }
+  return(output)
+}
+
+## --------------------------------------- ##
+##               orthology                 ##
+## --------------------------------------- ##
+#' Infer OrthoGroups Using Tree Reconciliation
+#' @description Infer orthogroups using species and gene trees reconciliation
+#' @usage orthology(trees, invoke, d = 2, t = 10, l = 1, plot = TRUE, saverec = FALSE)
+#' @param trees path to a single file containing first the species tree, followed by a  single gene/protein tree (see details).
+#' @param invoke character string representing the way in which the executable of RANGER-DTL (see details) is invoked.
+#' @param d cost assigned to gene duplication.
+#' @param t cost assigned to gene transfer.
+#' @param l cost assigned to gene loss.
+#' @param plot when TRUE, the orthology network graph is plotted.
+#' @param saverec path to the directory where to save the reconciliation file. If not provided the file is not saved (default)
+#' @details The executable of RANGER-DTL (https://compbio.engr.uconn.edu/software/RANGER-DTL) should be installed. All input trees must be expressed using the Newick format terminated by a semicolon, and they must be fully binary (fully resolved) and rooted. Species names in the species tree must be unique. E.g, E.g., (((speciesA_gene1, speciesC_gene1), speciesB_geneX), speciesC_gene2); and (((speciesA, speciesC), speciesB), speciesC); are both valid gene tree inputs and, in fact, represent the same gene tree. This gene tree contains one copy of the gene from speciesA and speciesB, and two copies from speciesC.
+#' @return  A list with four elements. The first one is a 'phylo' object where the nodelabels indicate the event: D, duplication or T transfer. If no label is shown is because the event correspond to speciation. The second element is a dataframe (the first column is the label of the internal nodes in the gene tree; the second column is the label of the internal nodes in the species tree, and the third and fourth columns label each internal node according to the inferred event). The third element of the list is an adjacency matrix: 1 when two proteins are orthologous, 0 if they are paralogous. The last element of the list is an orthogroup graph.
+#' @examples \donttest{orthology(trees = system.file("extdata", "input.trees", package = "orthGS"))}
+#' @importFrom igraph graph_from_adjacency_matrix
+#' @importFrom igraph as_data_frame
+#' @importFrom utils data
+#' @export
+
+orthology <- function(trees, invoke = "Ranger-DTL.mac", d = 2, t = 10, l = 1, plot = TRUE, saverec = FALSE){
+
+  exec <- Sys.which(invoke)
+
+  if (exec == ""){
+    message("The required Ranger-DTL executable is not on the system")
+    return(invisible(NULL)) # Gracefully exit, don't error
+  }
+
+  if (!is.logical(saverec)){
+    cmd <- paste(invoke, " -i ", trees, " -D ", d, " -T ", t, " -L ", l, " -o ", saverec, sep = "")
+    system(cmd)
+    m <- mapTrees(saverec)
+  } else {
+    recfile <- paste(tempdir(), 'tempFile', sep = "")
+    on.exit(unlink(recfile))
+    cmd <- paste(invoke, " -i ", trees, " -D ", d, " -T ", t, " -L ", l, " -o ", recfile, sep = "")
+    system(cmd)
+    m <- mapTrees(recfile)
+  }
+
+
+  A <- m[[3]]
+  A[is.na(A)] <- 0
+  a <- t(A)
+  A <- A + a
+  g <- graph_from_adjacency_matrix(A, mode = "undirected")
+  if (plot){
+    plot(g)
+  }
+
+  output <- list(m[[1]], m[[2]], m[[3]], g)
+  names(output) <- c("phylo", "map", "adjacency", "graph")
   return(output)
 }

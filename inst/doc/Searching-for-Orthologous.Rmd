@@ -3,7 +3,7 @@ title: "Searching for GS Orthologs"
 output: rmarkdown::html_vignette
 author: Elena Aledo
 vignette: >
-  %\VignetteIndexEntry{Searching_for_Orthologous}
+  %\VignetteIndexEntry{Searching for GS Orthologs}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -43,16 +43,18 @@ The function `subsetGS()` takes as an argument the species of interest and retur
 maize_ara <- subsetGS(c("Zea mays", "Arabidopsis thaliana"))
 ```
 
-Afterwards, we can proceed with the alignment and phylogenetic tree construction. For the first of these tasks, that is, the alignment, you can use whatever your favorite resource is. Nevertheless, the function `msa` of **orthGS** allows you to perform the task fluently. Note, that to use this function you need the executable of either MUSCLE or Clustal-Omega in the PATH of your system (see the vignette *Performing Sequence Alignment in R*).
+Afterwards, we can proceed with the alignment and phylogenetic tree construction. Ensure the 'muscle' software is installed. 
 
-```{r}
-# aln <- msa(sequences = maize_ara$prot, ids = maize_ara$phylo_id)
-# a <- aln$ali
-# rownames(a) <-  maize_ara$phylo_id
-# tr <- mltree(a)$tree
-# plot(phangorn::midpoint(tr), cex = 0.7)
+```{r, eval=FALSE}
+aln <- msa(sequences = maize_ara$prot, 
+           ids = maize_ara$phylo_id, 
+           method = "muscle")
+a <- aln$ali
+tr <- mltree(a)$tree
+plot(phangorn::midpoint(tr), cex = 0.7)
 ```
 
+![](./Figures/maize_ara.png){width=50%}
 
 If we want to be rigorous, and of course we do, there is  little, if anything, to conclude about orthology relationships between maize and arabidopsis GS proteins in view of these results. So, it's time to switch to a more suitable approach. Firstly, we will use the function `orthG()`, which takes as an argument the set of species to be included in the analysis and returns an orthology graph: two nodes (two GS proteins) are connected if and only if they are orthologs (an adjacency matrix is also provided if wished). 
 

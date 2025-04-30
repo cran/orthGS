@@ -128,3 +128,32 @@ test_that("subsetGS() works properly with UniProt",{
   expect_equal(dim(c), c(1,2))
   expect_equal(c[1,2], "Arabidopsis thaliana")
 })
+
+## ---------------------------------------------- ##
+#                Testing orthology                 #
+## ---------------------------------------------- ##
+test_that("orthology() works properly with UniProt",{
+
+  skip_on_cran()
+  skip_on_travis()
+
+  path <- system.file("extdata", "input.trees", package = "orthGS")
+  a <- orthology(trees = path, plot = FALSE, saverec = FALSE)
+  b <- orthology(trees = path, plot = FALSE, saverec = "./vistoynovisto")
+
+  expect_is(a, "list")
+  expect_equal(length(a), 4)
+  expect_is(a[[1]], "phylo")
+  expect_is(a[[2]], "data.frame")
+  expect_is(a[[3]], "matrix")
+  expect_is(a[[4]], "igraph")
+
+  expect_is(b, "list")
+  expect_equal(length(b), 4)
+  expect_is(b[[1]], "phylo")
+  expect_is(b[[2]], "data.frame")
+  expect_is(b[[3]], "matrix")
+  expect_is(b[[4]], "igraph")
+  expect_true(file.exists("./vistoynovisto"))
+  file.remove("./vistoynovisto")
+})

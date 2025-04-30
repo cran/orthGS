@@ -8,19 +8,33 @@ knitr::opts_chunk$set(
 library(orthGS)
 
 ## ----eval=FALSE, include=TRUE-------------------------------------------------
-# # # Plot species tree:
-# # str <- ape::read.tree(text = "((((Pa,Psm),(Pp,Pin)),(Abi,Ap)),((Ara,(Pod,Nag)),(Sci,(Tba,Tax))));")
-# # plot(str)
-# # # Load GS sequence data:
-# # agf <- agf
-# # # Aligning sequences and building an unrooted tree
-# # # (Remember you need the MUSCLE software in your path):
-# # conif <- agf[which(agf$short %in% str$tip.label), ]
-# # ptr <- mltree(msa(sequences = conif$prot, ids = conif$phylo_id)$ali)$tree
-# #
-# # # Now, we root the tree:
-# # ptr <- madRoot(ptr)
-# # plot(ptr, use.edge.length = FALSE, cex = 0.6)
+# # Plot species tree:
+# str <- ape::read.tree(text = "((((Pa,Psm),(Pp,Pin)),(Abi,Ap)),((Ara,(Pod,Nag)),(Sci,(Tba,Tax))));")
+# plot(str)
+# # Load GS sequence data:
+# agf <- agf
+# # Aligning sequences and building an unrooted tree
+# # (remember you need the MUSCLE software in your path):
+# conif <- agf[which(agf$short %in% str$tip.label), ]
+# 
+# # Depending on whether you have the MUSCLE software in your path or if you choose
+# # the R package muscle, you will follow either chunk (A) or (B).
+# # If you select path A, uncomment it and comment out chunk B
+# 
+# ## --- Option (A): when MUSCLE software is in your path
+# # ptr <- mltree(msa(sequences = conif$prot,
+# #                   ids = conif$phylo_id,
+# #                   inhouse = TRUE)$ali)$tree
+# ## --- Option (B): when we chose to install the R package muscle:
+# # First the alignment:
+# aln <- msa(sequences = conif$prot, ids = conif$phylo_id)$ali
+# rownames(aln) <- conif$phylo_id
+# # Then, the tree:
+# ptr <- mltree(aln)$tree
+# 
+# # Regardless the way followed (either A or B), we now root the tree:
+# ptr <- madRoot(ptr)
+# plot(ptr, use.edge.length = FALSE, cex = 0.6)
 
 ## -----------------------------------------------------------------------------
 data <- subsetGS(sp = c("Ap", "Abi", "Pin", "Pp", "Psm", "Pa"))[, 2:9]

@@ -10,10 +10,11 @@ library(orthGS)
 ## -----------------------------------------------------------------------------
 maize_ara <- subsetGS(c("Zea mays", "Arabidopsis thaliana"))
 
-## -----------------------------------------------------------------------------
-# aln <- msa(sequences = maize_ara$prot, ids = maize_ara$phylo_id)
+## ----eval=FALSE---------------------------------------------------------------
+# aln <- msa(sequences = maize_ara$prot,
+#            ids = maize_ara$phylo_id,
+#            method = "muscle")
 # a <- aln$ali
-# rownames(a) <-  maize_ara$phylo_id
 # tr <- mltree(a)$tree
 # plot(phangorn::midpoint(tr), cex = 0.7)
 

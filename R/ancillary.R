@@ -8,6 +8,7 @@
 #                                        #
 ## ------------------------------------ ##
 
+
 ## ---------------------------------------------------------------- ##
 #      msa <- function(sequences, ids, seqtype, method, sfile)      #
 ## ---------------------------------------------------------------- ##
@@ -46,9 +47,9 @@ msa <- function (sequences, ids = names(sequences), seqtype = "prot", method = "
     stop("The number of sequences and sequences' ids doesn't match!")
   }
   if (seqtype == "cds"){
-      dnaSeq <- sequences
-      cod <- strsplit(gsub("(.{3})", "\\1 ", dnaSeq), split = " ")
-      sequences <- unlist(lapply(sequences, function(x) tr(x)))
+    dnaSeq <- sequences
+    cod <- strsplit(gsub("(.{3})", "\\1 ", dnaSeq), split = " ")
+    sequences <- unlist(lapply(sequences, function(x) tr(x)))
   }
   seqs <- lapply(sequences, function(x) strsplit(x, split = "")[[1]])
   sqs <- bio3d::seqbind(seqs[[1]], seqs[[2]], blank = "-")
@@ -94,6 +95,7 @@ msa <- function (sequences, ids = names(sequences), seqtype = "prot", method = "
   return(aln)
 }
 
+
 ## ---------------------------------------------------------------- ##
 #                     mltree <- function()                           #
 ## ---------------------------------------------------------------- ##
@@ -104,17 +106,12 @@ msa <- function (sequences, ids = names(sequences), seqtype = "prot", method = "
 #' @param df logical. When TRUE msa should be a dataframe, when FALSE msa should be a string giving the path to a fasta file containing the alignment.
 #' @param gapl logical, when TRUE a gapless alignment is used.
 #' @param model allows to choose an amino acid models (see the function phangorn::as.pml)
-#' @details The function makes a NJ tree and then improvove it using an optimization procedure based on ML.
+#' @details The function makes a NJ tree and then improve it using an optimization procedure based on ML.
 #' @return a ML optimized tree (and parameters)
 #' @examples
-#' # Example 1:
-#' mltree(matrix(c("R","K","E","A","M","S","P","P","G"), nrow=3,
-#'        dimnames = list(letters[1:3], 1:3)))$tree
-#' # Example 2:
-#' \dontrun{
-#' a <- msa(sequences=c("RAPGT", "KMPGT", "ESGGT"), ids = letters[1:3])$ali
-#' mltree(a)$tree
-#' }
+#' \dontrun{a <- msa(sequences=c("RAPGT", "KMPGT", "ESGGT"), ids = letters[1:3])$ali
+#' rownames(a) <- letters[1:3]
+#' tr <- mltree(a)$tree}
 #' @seealso gapless_msa
 #' @importFrom ape nj
 #' @importFrom ape dist.aa
@@ -153,15 +150,7 @@ mltree <- function(msa, df = TRUE, gapl = TRUE, model = "WAG"){
 #' @param sfile if different to FALSE, then it should be a string indicating the path to save a fasta alignment file.
 #' @details It should be noted that this function does not carry out the alignment itself.
 #' @return an alignment without gaps in form of matrix or a file containing such an alignment in fasta format.
-#' @examples
-#' # Example 1:
-#' aln <- matrix(c("A",  "P",  "G",  "W",  "-",  "-",
-#'                 "-",  "A",  "G",  "W",  "C",  "-",
-#'                 "-",  "-",  "C",  "W",  "G",  "A" ), nrow = 3, byrow =TRUE)
-#' gapless_msa(aln)
-#' # Example 2:
-#' \dontrun{gapless_msa(msa(sequences = c("APGW", "AGWC", "CWGA"),
-#'                      ids = c("a", "b", "c"))$ali)}
+#' @examples \dontrun{gapless_msa(msa(sequences = c("APGW", "AGWC", "CWGA"),ids = c("a", "b", "c"))$ali)}
 #' @seealso msa
 #' @importFrom seqinr read.fasta
 #' @export
@@ -210,13 +199,10 @@ gapless_msa <- function(msa, seqtype = "AA", df = TRUE, sfile = FALSE){
 #' @return a rooted tree and supplementary information if required.
 #' @author Tria, F. D. K., Landan, G. and Dagan, T.
 #' @examples
-#' # Example 1:
-#' madRoot("(c:1.182246599,b:0.4169984702,a:0.1582465793);")
-#' # Example 2:
-#' \dontrun{
-#' a <- msa(sequences=c("RAPGT", "KMPGT", "ESGGT"), ids = letters[1:3])$ali
+#' \dontrun{a <- msa(sequences=c("RAPGT", "KMPGT", "ESGGT"), ids = letters[1:3])$ali
+#' rownames(a) <- letters[1:3]
 #' tr <- mltree(a)$tree
-#' rtr <- madRoot(tr) }
+#' rtr <- madRoot(tr)}
 #' @references Tria, F. D. K., Landan, G. and Dagan, T. Nat. Ecol. Evol. 1, 0193 (2017).
 #' @importFrom ape read.tree
 #' @importFrom ape is.binary

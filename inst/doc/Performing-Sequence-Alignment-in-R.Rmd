@@ -2,7 +2,7 @@
 title: "Performing Sequence Alignment in R"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Performing_Sequence_Alignment_in_R}
+  %\VignetteIndexEntry{Performing Sequence Alignment in R}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

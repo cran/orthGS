@@ -1,5 +1,6 @@
 library(orthGS)
 
+
 ## ---------------------------------------------- ##
 #             Testing msa                          #
 ## ---------------------------------------------- ##
@@ -13,7 +14,7 @@ test_that("msa() works properly", {
                  "MSEPIRVLVTGAAGQIAYSLLYSIGNGSVFGKDQPIILVLLDITPMM")
   names(sequences) <- c("P19446", "P40925", "P40926")
 
-  b <- msa(sequences = sequences, ids = c("wmelon", "cyt", "mit"), method = "muscle3")
+  b <- msa(sequences = sequences, ids = c("wmelon", "cyt", "mit"), method = "muscle")
   c <- msa(sequences = sequences, ids = c("wmelon", "cyt", "mit"), method = "clustalo")
 
   # a <- msa(sequences = sequences, ids = c("wmelon", "cyt", "mit"), inhouse = FALSE) # using muscle R pkg
@@ -52,7 +53,6 @@ test_that("msa() works properly", {
   expect_is(c[[2]], "matrix")
   expect_is(c[[4]], 'character')
 })
-
 ## ----------------------------------------------- ##
 #          Testing the function mltree              #
 ## ----------------------------------------------- ##
@@ -109,15 +109,9 @@ test_that("madRoot() works properly", {
   skip_on_cran()
   skip_on_travis()
 
-  # a <- msa(sequences = c(PpGS1b1, PpGS1b2, PpGS1a, AbiGS1b, AbiGS1a, AtrGS1a, AtrGS1b1, AtrGS1b2, AtrGS2, OsaGS1b1, OsaGS1b2, OsaGS1b3, OsaGS2),
-  #          ids = c("PpGS1b1", "PpGS1b2", "PpGS1a", "AbiGS1b", "AbiGS1a", "AtrGS1a", "AtrGS1b1", "AtrGS1b2", "AtrGS2", "OsaGS1b1", "OsaGS1b2", "OsaGS1b3","OsaGS2"),
-  #          inhouse = FALSE)$ali
-  # rownames(a) <- c("PpGS1b1", "PpGS1b2", "PpGS1a", "AbiGS1b", "AbiGS1a", "AtrGS1a", "AtrGS1b1", "AtrGS1b2", "AtrGS2", "OsaGS1b1", "OsaGS1b2", "OsaGS1b3","OsaGS2")
-
   a <- msa(sequences = c(PpGS1b1, PpGS1b2, PpGS1a, AbiGS1b, AbiGS1a, AtrGS1a, AtrGS1b1, AtrGS1b2, AtrGS2, OsaGS1b1, OsaGS1b2, OsaGS1b3, OsaGS2),
-                     ids = c("PpGS1b1", "PpGS1b2", "PpGS1a", "AbiGS1b", "AbiGS1a", "AtrGS1a", "AtrGS1b1", "AtrGS1b2", "AtrGS2", "OsaGS1b1", "OsaGS1b2", "OsaGS1b3","OsaGS2"),
-                     method = "muscle3")$ali
-
+                     ids = c("PpGS1b1", "PpGS1b2", "PpGS1a", "AbiGS1b", "AbiGS1a", "AtrGS1a", "AtrGS1b1", "AtrGS1b2", "AtrGS2", "OsaGS1b1", "OsaGS1b2", "OsaGS1b3","OsaGS2"))$ali
+  rownames(a) <- c("PpGS1b1", "PpGS1b2", "PpGS1a", "AbiGS1b", "AbiGS1a", "AtrGS1a", "AtrGS1b1", "AtrGS1b2", "AtrGS2", "OsaGS1b1", "OsaGS1b2", "OsaGS1b3","OsaGS2")
   utr <- mltree(a)$tree
   phy <- madRoot(tree = utr, output_mode = "phylo")
   sta <- madRoot(tree = utr, output_mode = "stats")
